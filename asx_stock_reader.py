@@ -136,5 +136,6 @@ exportList = exportList.sort_values(by='RS_Rating', ascending=False)
 print('\n', exportList)
 writer = ExcelWriter("ScreenOutput.xlsx")
 exportList.to_excel(writer, "Sheet1")
-tickers_fail.to_excel(writer, "Sheet2")
 writer.save()
+for i in tickers_fail:
+    print(i, end=", ")
