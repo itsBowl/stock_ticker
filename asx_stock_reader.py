@@ -1,13 +1,3 @@
-"""
-Mostly just for me here :D
-Some explainers:
-'print(f"test")' is a c-style formatting trick that allows me to load variables into a print functions inline with the text.
-It's just a shorter hand way of building print lines that's faster to write than using other methods
-print("text", end="") is a pythonic way of setting the trailing character of a print function. Normal python functionality sets
-the end of the print function to print a newline character (\n), you can instead specifiy a different character including no character.
-
-"""
-
 import datetime
 from pandas import ExcelWriter
 import pandas as pd
@@ -148,12 +138,3 @@ writer = ExcelWriter("ScreenOutput.xlsx")
 exportList.to_excel(writer, "Sheet1")
 tickers_fail.to_excel(writer, "Sheet2")
 writer.save()
-
-
-"""
-Time worked:
-4hrs on call 10/04
-4hrs between calls so far
-
-
-"""
