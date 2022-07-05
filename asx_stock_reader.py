@@ -13,6 +13,17 @@ exportList = pd.DataFrame(columns=['Stock', "RS_Rating", "50 Day MA", "150 Day M
 returns_multiples = []
 index_name = "^AXKO"
 
+def get_html(url):
+    header = {
+      "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/50.0.2661.75 Safari/537.36",
+      "X-Requested-With": "XMLHttpRequest"
+    }
+    print("Sending HTML Request")
+    
+    #Gets the entire contents of the webpage as HTML, loads it into memory as local variable request
+    request = requests.get(url, headers=header) 
+    print(f"Got html from {url}")
+    return request
 
 def get_asx_all_ords_tickers():
     url = "https://www.stockmetric.net/asx-indices/all-ordinaries/"
@@ -33,14 +44,48 @@ def get_asx_all_ords_tickers():
     tickers_fixed = []
     for i in tickers:
         tickers_fixed.append(i + ".AX")
+        print(i)
+    return tickers_fixed
+
+def get_bme_tickers():
+    request = get_html("https://www.bmegrowth.es/ing/Listado.aspx")
+    tables = pd.read_html(request.text)
+    print(request.text)
+    print(tables)
+    request = get_html("https://www.bmegrowth.es/ing/Ficha/ADL_BIONATUR_SOLUTIONS_ES0184980003.aspx")
+    print(request.text)
+    tables2 = pd.read_html(request.text)
+    print(tables2)
+    time.sleep(100)
     return tickers_fixed
 
 
-tickers = get_asx_all_ords_tickers()
-"""Uncomment  below for debugging of fetched data ticker symbols"""
-#for i in tickers:
-#    print(i)
+def get_list_from_csv():
+    tickers = []
+    file_location = "C:/Users/benjp/source/repos/stock_ticker/stock_ticker/list.csv" #edit this with new CSV file location
+    with open(file_location, "r") as f:
+        reader = csv.reader(f)
+        for row in reader:
+            if row: #Checks that each row has something in it (very dumb function is just checking against null strings (\n)
+                print(row[0])
+                tickers.append(row[0] + ".AX")
 
+    return tickers
+
+
+"""USER AVAILABLE FUNCTIONS TO SET DIFFERENT INPUT METHODS
+To use: copy the function (including the trailing brackets) after the "tickers = " just below this comment.
+get_asx_all_ords_tickers() : fetches list of stocks on the all ords market for austrailia
+get_bme_tickers() : DOES NOT FUNCTION PROPERLY AT THIS TIME
+get_list_from_csv() : makes list of stocks from a CSV file.
+"""
+tickers = get_asx_all_ords_tickers()
+
+
+
+"""Uncomment  below for debugging of fetched data ticker symbols"""
+for i in tickers:
+    print(i)
 index_df = pdr.get_data_yahoo(index_name, start_date, end_date)
 index_df['Percent Change'] = index_df['Adj Close'].pct_change()
 index_return = (index_df['Percent Change'] + 1).cumprod()[-1]
@@ -49,9 +94,6 @@ print(f'index return for market {index_return}')
 tickers_fail = []
 for ticker in tickers:
     print(ticker)
-    if counter == 0:
-        counter += 1
-        continue
     try:
         df = pdr.get_data_yahoo(ticker, start_date, end_date)
     except Exception:
@@ -134,8 +176,12 @@ for stock in rs_stocks:
 
 exportList = exportList.sort_values(by='RS_Rating', ascending=False)
 print('\n', exportList)
-writer = ExcelWriter("ScreenOutput.xlsx")
+writer = ExcelWriter("../ScreenOutput.xlsx")
 exportList.to_excel(writer, "Sheet1")
 writer.save()
 for i in tickers_fail:
     print(i, end=", ")
+print()
+with open("../aaaa111failed_tickers.csv", "w") as f:
+    write = csv.writer(f)
+    write.writerows(tickers_fail)
